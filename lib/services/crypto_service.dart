@@ -28,7 +28,7 @@ class CryptoService {
     final iv = _randomBytes(_ivLen);
     final key = _deriveKey(password, salt);
     final cipher = _newCipher()
-      ..init(true, ParametersWithIV(KeyParameter(key), iv));
+      ..init(true, PaddedBlockCipherParameters(ParametersWithIV(KeyParameter(key), iv), null));
     final plain = Uint8List.fromList(utf8.encode(plainText));
     final cipherBytes = cipher.process(plain);
     return {
@@ -45,7 +45,7 @@ class CryptoService {
     final data = base64Decode(payload['data'] as String);
     final key = _deriveKey(password, salt);
     final cipher = _newCipher()
-      ..init(false, ParametersWithIV(KeyParameter(key), iv));
+      ..init(false, PaddedBlockCipherParameters(ParametersWithIV(KeyParameter(key), iv), null));
     final plainBytes = cipher.process(data);
     return utf8.decode(plainBytes);
   }

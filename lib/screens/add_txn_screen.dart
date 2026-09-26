@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/txn.dart';
-import '../models/categories.dart' as cat;
 import '../services/ledger_store.dart';
 
 class AddTxnScreen extends StatefulWidget {
@@ -16,11 +15,11 @@ class _AddTxnScreenState extends State<AddTxnScreen> {
   String _type = 'expense';
   final _amountCtl = TextEditingController();
   final _noteCtl = TextEditingController();
-  String _category = cat.Categories.expense.first;
+  String _category = Categories.expense.first;
   DateTime _date = DateTime.now();
 
   List<String> get _cats =>
-      _type == 'income' ? cat.Categories.income : cat.Categories.expense;
+      _type == 'income' ? Categories.income : Categories.expense;
 
   void _onTypeChanged(String? v) {
     if (v == null) return;

@@ -24,7 +24,8 @@ class _UnlockScreenState extends State<UnlockScreen> {
   }
 
   Future<void> _checkFirstRun() async {
-    setState(() => _firstRun = !(await LedgerStore.hasLocalCache()));
+    final hasCache = await LedgerStore.hasLocalCache();
+    setState(() => _firstRun = !hasCache);
   }
 
   Future<void> _submit() async {
