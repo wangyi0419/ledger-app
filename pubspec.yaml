@@ -1,0 +1,27 @@
+name: ledger_sync_app
+description: 跨平台记账应用，数据加密同步至私有 GitHub 仓库。
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.1
+  http: ^1.2.0
+  pointycastle: ^3.2.0
+  flutter_secure_storage: ^9.0.0
+  shared_preferences: ^2.2.2
+  uuid: ^4.3.3
+  intl: ^0.19.0
+  fl_chart: ^0.68.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

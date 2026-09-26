@@ -1,0 +1,27 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+
+# Flutter
+.dart_tool/
+.flutter-ide.json
+.pub-cache/
+.pub/
+/build/
+*.iml
+*.aab
+*.apk
+*.ipa
+
+# Local encrypted cache (device-only)
+ledger_local.enc
+
+# IDE
+.idea/
+.vscode/
+
+# AI-generated concept video (not part of app source)
+generated-videos/

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>记账同步 App · 部署与安装演示</title>
+<style>
+  :root{
+    --teal:#00897b; --teal-d:#00695c; --teal-l:#4db6ac;
+    --ink:#1a2b29; --muted:#5b6b69; --bg1:#f3f8f7; --bg2:#e4f0ee;
+    --card:#ffffff; --line:#d7e6e3; --warn:#c0392b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    color:var(--ink); display:flex; flex-direction:column; height:100vh; overflow:hidden;
+  }
+  header{display:flex;align-items:center;gap:12px;padding:14px 22px;background:rgba(255,255,255,.7);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);}
+  header .dot{width:12px;height:12px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px rgba(0,137,123,.18);}
+  header h1{font-size:16px;font-weight:700;letter-spacing:.5px;}
+  header .meta{margin-left:auto;font-size:12px;color:var(--muted);}
+  .stage{flex:1;position:relative;overflow:hidden;}
+  .scene{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:34px 40px;opacity:0;transform:translateY(18px) scale(.99);transition:opacity .5s ease,transform .5s ease;pointer-events:none;}
+  .scene.active{opacity:1;transform:none;pointer-events:auto;}
+  .scene .step{font-size:13px;font-weight:700;color:var(--teal);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+  .scene h2{font-size:30px;font-weight:800;margin-bottom:14px;text-align:center;}
+  .scene p.lead{max-width:680px;text-align:center;color:var(--muted);font-size:15px;line-height:1.7;margin-bottom:22px;}
+  .scene .cards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;max-width:820px;}
+  .scene .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;min-width:230px;max-width:300px;box-shadow:0 6px 18px rgba(0,0,0,.05);}
+  .scene .card h3{font-size:15px;margin-bottom:8px;color:var(--teal-d);display:flex;align-items:center;gap:8px;}
+  .scene .card ul{list-style:none;font-size:13.5px;color:var(--ink);line-height:1.7;}
+  .scene .card li{padding-left:18px;position:relative;}
+  .scene .card li:before{content:"›";position:absolute;left:4px;color:var(--teal);font-weight:700;}
+  .scene .art{width:min(520px,80vw);height:auto;margin-bottom:14px;}
+  .pill{display:inline-block;font-size:12px;padding:3px 10px;border-radius:999px;background:rgba(0,137,123,.12);color:var(--teal-d);font-weight:700;margin:2px;}
+  .pill.lock{background:rgba(192,57,43,.12);color:var(--warn);}
+  .note{font-size:12.5px;color:var(--muted);max-width:720px;text-align:center;margin-top:18px;border-top:1px dashed var(--line);padding-top:12px;}
+  footer{display:flex;align-items:center;gap:14px;padding:10px 22px;background:rgba(255,255,255,.7);border-top:1px solid var(--line);}
+  .progress{flex:1;height:6px;background:var(--line);border-radius:999px;overflow:hidden;}
+  .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal-l),var(--teal));transition:width .4s ease;}
+  .dots{display:flex;gap:6px;}
+  .dots b{width:9px;height:9px;border-radius:50%;background:var(--line);cursor:pointer;transition:.2s;}
+  .dots b.on{background:var(--teal);transform:scale(1.25);}
+  button.ctrl{background:var(--teal);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;min-width:76px;}
+  button.ctrl.ghost{background:#fff;color:var(--teal-d);border:1px solid var(--teal);}
+  .counter{font-size:12px;color:var(--muted);min-width:54px;text-align:center;}
+  .kbd{font-size:11px;color:var(--muted);}
+</style>
+</head>
+<body>
+<header>
+  <span class="dot"></span>
+  <h1>记账同步 App · 部署与安装演示</h1>
+  <span class="meta">Flutter 跨平台 · GitHub 私有仓库加密同步</span>
+</header>
+
+<div class="stage" id="stage">
+
+  <!-- 0 Cover -->
+  <section class="scene active" data-step="Overview">
+    <svg class="art" viewBox="0 0 520 240" xmlns="http://www.w3.org/2000/svg">
+      <rect x="120" y="40" width="120" height="200" rx="18" fill="#fff" stroke="#00897b" stroke-width="3"/>
+      <rect x="140" y="70" width="80" height="120" rx="6" fill="#e4f0ee"/>
+      <circle cx="180" cy="150" r="22" fill="#00897b"/>
+      <path d="M170 150l8 8 14-16" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <ellipse cx="320" cy="110" rx="120" ry="60" fill="#cfeee9" opacity=".7"/>
+      <path d="M280 110a40 40 0 0158 0M300 110a20 20 0 0128 0" stroke="#00897b" stroke-width="3" fill="none"/>
+      <rect x="300" y="70" width="44" height="36" rx="6" fill="#00897b"/>
+      <text x="322" y="93" font-size="16" fill="#fff" text-anchor="middle" font-family="sans-serif">256</text>
+      <text x="322" y="125" font-size="12" fill="#00695c" text-anchor="middle" font-family="sans-serif">AES</text>
+    </svg>
+    <div class="step">演示说明</div>
+    <h2>一份代码，安卓 / iPhone / 网页 三端通用</h2>
+    <p class="lead">数据经 AES-256 加密后同步到你名下的 GitHub 私有仓库，多端一方更新、另一方自动同步。<br/>本演示按真实步骤逐一播放，可作为部署安装的跟练脚本。</p>
+    <div style="text-align:center">
+      <span class="pill">安卓原生 APK</span>
+      <span class="pill">iPhone 网页版(免$99)</span>
+      <span class="pill lock">数据私有加密</span>
+    </div>
+    <div class="note">提示：本演示为图文动画，可用 Mac / iPhone 自带「屏幕录制」截成 mp4 分享给同事。<br/>键盘 ← → 翻页，空格 播放/暂停。</div>
+  </section>
+
+  <!-- 1 Repos -->
+  <section class="scene" data-step="Step 1">
+    <div class="step">第一步</div>
+    <h2>准备两个 GitHub 仓库</h2>
+    <p class="lead">在 GitHub 新建两个仓库：一个放源码与自动打包配置，另一个只放加密数据文件（必须私有）。</p>
+    <div class="cards">
+      <div class="card">
+        <h3>📦 ledger-app</h3>
+        <ul><li>存放应用源码 + CI 配置</li><li>可见性：公开即可（代码无密钥）</li></ul>
+      </div>
+      <div class="card">
+        <h3>🔒 ledger-data</h3>
+        <ul><li>只存加密文件 data/ledger.enc</li><li>可见性：<b>必须 Private</b></li><li>首次同步自动创建，无需手建</li></ul>
+      </div>
+    </div>
+    <div class="note">新建路径：GitHub 右上角 <b>+ → New repository</b> → 填名 → 数据仓库选 Private → Create。</div>
+  </section>
+
+  <!-- 2 Token -->
+  <section class="scene" data-step="Step 2">
+    <div class="step">第二步</div>
+    <h2>生成 Personal Access Token</h2>
+    <p class="lead">App 通过 Token 读写私有仓库。只需生成一次，三端共用。</p>
+    <div class="cards">
+      <div class="card">
+        <h3>操作路径</h3>
+        <ul><li>头像 → Settings → Developer settings</li><li>Personal access tokens → Tokens (classic)</li><li>Generate new token (classic)</li></ul>
+      </div>
+      <div class="card">
+        <h3>关键设置</h3>
+        <ul><li>权限勾选 <b>repo</b>（整项）</li><li>过期：建议 1 年或无过期</li><li>生成后<b>复制保存</b>（只显示一次）</li></ul>
+      </div>
+    </div>
+    <div class="note">安全：Token 在原生端存系统安全存储；网页端存浏览器本地。他人即便拿到 Token 也只能读到<b>加密后</b>的数据，无主密码无法解密。</div>
+  </section>
+
+  <!-- 3 Push -->
+  <section class="scene" data-step="Step 3">
+    <div class="step">第三步</div>
+    <h2>把源码推到 ledger-app</h2>
+    <p class="lead">在本地 ledger_sync_app 目录执行以下命令，把代码推上 GitHub（推送会触发后面的自动构建）。</p>
+    <div class="cards">
+      <div class="card" style="min-width:420px">
+        <pre style="font-size:13px;line-height:1.6;color:#00695c;white-space:pre-wrap">cd ledger_sync_app
+git init
+git remote add origin https://github.com/&lt;用户名&gt;/ledger-app.git
+git add .
+git commit -m "init ledger app"
+git branch -M main
+git push -u origin main</pre>
+      </div>
+    </div>
+    <div class="note">推送到 main 分支后，GitHub Actions 会自动开始「构建安卓 APK」与「部署网页」两条流水线。</div>
+  </section>
+
+  <!-- 4 Android -->
+  <section class="scene" data-step="Step 4">
+    <div class="step">第四步 · 安卓</div>
+    <h2>安卓安装：CI 自动打包 APK</h2>
+    <p class="lead">无需本机装 Flutter，GitHub 云端自动编译并产出安装包。</p>
+    <div class="cards">
+      <div class="card">
+        <h3>① 等构建</h3>
+        <ul><li>仓库 → Actions</li><li>Build Android APK 自动运行</li></ul>
+      </div>
+      <div class="card">
+        <h3>② 下 APK</h3>
+        <ul><li>该次运行 → Artifacts</li><li>下载 app-release.apk</li></ul>
+      </div>
+      <div class="card">
+        <h3>③ 安装</h3>
+        <ul><li>传到手机，允许「未知来源」</li><li>之后每次推代码自动重打包</li></ul>
+      </div>
+    </div>
+    <div class="note">想更省事：把 apk 上传到微信文件传输助手，手机端直接打开安装。</div>
+  </section>
+
+  <!-- 5 Web deploy -->
+  <section class="scene" data-step="Step 5">
+    <div class="step">第五步 · iPhone 网页版</div>
+    <h2>部署网页到 GitHub Pages</h2>
+    <p class="lead">零本机环境，推送代码后 Actions 自动构建并上线网页（推荐 iPhone 走这条路径）。</p>
+    <div class="cards">
+      <div class="card">
+        <h3>开启 Pages</h3>
+        <ul><li>仓库 Settings → Pages</li><li>Source 选 GitHub Actions</li></ul>
+      </div>
+      <div class="card">
+        <h3>自动流水线</h3>
+        <ul><li>flutter create --platforms=web</li><li>构建 → 注入 PWA 标签 → 部署</li></ul>
+      </div>
+      <div class="card">
+        <h3>访问地址</h3>
+        <ul><li>https://&lt;用户名&gt;.github.io/ledger-app/</li></ul>
+      </div>
+    </div>
+    <div class="note">更私密：ledger-app 设为 Private 时，Pages 仅登录态可见；设公开则任何人可开网页，但数据仍在私有仓库且已加密，无泄露风险——推荐公开以便 iPhone 直连。</div>
+  </section>
+
+  <!-- 6 Add to home -->
+  <section class="scene" data-step="Step 6">
+    <div class="step">第六步 · iPhone</div>
+    <h2>在 iPhone「添加到主屏幕」</h2>
+    <p class="lead">用 Safari 打开网页，添加后即变为无浏览器边框的独立 App，体验接近原生。</p>
+    <div class="cards">
+      <div class="card">
+        <h3>① 打开</h3>
+        <ul><li>iPhone 用 Safari 访问网页地址</li></ul>
+      </div>
+      <div class="card">
+        <h3>② 添加</h3>
+        <ul><li>点底部「分享」→「添加到主屏幕」</li><li>命名（如「记账」）→ 添加</li></ul>
+      </div>
+      <div class="card">
+        <h3>③ 使用</h3>
+        <ul><li>桌面出现图标，点开即独立运行</li><li>iOS 16.4+ 支持标准 PWA 安装</li></ul>
+      </div>
+    </div>
+    <div class="note">网页端数据与原生端完全互通：iPhone 记一笔，安卓打开会自动同步过来。</div>
+  </section>
+
+  <!-- 7 Config -->
+  <section class="scene" data-step="Step 7">
+    <div class="step">第七步 · 各端通用</div>
+    <h2>App 内配置（首次使用）</h2>
+    <p class="lead">每台设备只需设置一次主密码与 GitHub 连接信息。</p>
+    <div class="cards">
+      <div class="card">
+        <h3>① 主密码</h3>
+        <ul><li>首次运行设置（至少 6 位）</li><li><b>请牢记，忘记无法恢复数据</b></li></ul>
+      </div>
+      <div class="card">
+        <h3>② GitHub 设置</h3>
+        <ul><li>用户名：你的账号</li><li>数据仓库名：ledger-data</li><li>Token：第二步复制的那个</li><li>路径：data/ledger.enc</li></ul>
+      </div>
+      <div class="card">
+        <h3>③ 启用</h3>
+        <ul><li>点「测试连接」确认</li><li>点「保存并同步」</li><li>「+」添加收支，自动加密同步</li></ul>
+      </div>
+    </div>
+    <div class="note">另一端打开 App 会自动拉取并合并，无需重复配置。</div>
+  </section>
+
+  <!-- 8 Encryption -->
+  <section class="scene" data-step="Step 8">
+    <div class="step">原理速览</div>
+    <h2>同步与加密怎么工作</h2>
+    <p class="lead">每条记录带唯一 id 与更新时间；本地与仓库数据均为 AES-256 加密，主密码不一致绝不覆盖远端。</p>
+    <svg class="art" viewBox="0 0 520 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="80" width="110" height="60" rx="10" fill="#fff" stroke="#00897b" stroke-width="2"/>
+      <text x="75" y="115" font-size="13" fill="#00695c" text-anchor="middle" font-family="sans-serif">安卓</text>
+      <rect x="205" y="80" width="110" height="60" rx="10" fill="#fff" stroke="#00897b" stroke-width="2"/>
+      <text x="260" y="115" font-size="13" fill="#00695c" text-anchor="middle" font-family="sans-serif">GitHub 私有仓</text>
+      <rect x="390" y="80" width="110" height="60" rx="10" fill="#fff" stroke="#00897b" stroke-width="2"/>
+      <text x="445" y="115" font-size="13" fill="#00695c" text-anchor="middle" font-family="sans-serif">iPhone</text>
+      <path d="M130 105h65" stroke="#00897b" stroke-width="3" marker-end="url(#a)"/>
+      <path d="M315 105h65" stroke="#00897b" stroke-width="3" marker-end="url(#a)"/>
+      <path d="M390 110 C 340 160, 180 160, 130 110" stroke="#4db6ac" stroke-width="2" fill="none" stroke-dasharray="5 5" marker-end="url(#a)"/>
+      <defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0l8 4-8 4z" fill="#00897b"/></marker></defs>
+      <rect x="225" y="20" width="70" height="30" rx="6" fill="#cfeee9"/>
+      <text x="260" y="40" font-size="12" fill="#00695c" text-anchor="middle" font-family="sans-serif">AES-256</text>
+    </svg>
+    <div class="note">合并规则：同 id 以较新（updatedAt 大）者胜；不同 id 取并集。打开 App、回前台、每 60 秒自动对账。</div>
+  </section>
+
+  <!-- 9 Done -->
+  <section class="scene" data-step="Done">
+    <div class="step">完成</div>
+    <h2>部署完成，多端互通 ✅</h2>
+    <p class="lead">你现在拥有：一个私有加密数据仓库 + 一个自动打包/部署的 App 仓库。安卓装 APK，iPhone 用网页版，数据实时同步。</p>
+    <div style="text-align:center">
+      <span class="pill">安卓 APK 已装</span>
+      <span class="pill">iPhone 已添加到主屏幕</span>
+      <span class="pill lock">数据私有加密</span>
+      <span class="pill">多端自动同步</span>
+    </div>
+    <div class="note">排错：同步失败/401 → 重生成 Token 并勾选 repo；主密码遗忘 → 需清本地数据重设（原数据不可恢复）。详见 GUIDE.md 第八节。</div>
+  </section>
+
+</div>
+
+<footer>
+  <button class="ctrl ghost" id="prev">‹ 上一步</button>
+  <button class="ctrl" id="play">⏸ 暂停</button>
+  <button class="ctrl ghost" id="next">下一步 ›</button>
+  <div class="progress"><i id="bar"></i></div>
+  <div class="dots" id="dots"></div>
+  <div class="counter" id="counter">1 / 10</div>
+</footer>
+
+<script>
+(function(){
+  var scenes = Array.prototype.slice.call(document.querySelectorAll('.scene'));
+  var total = scenes.length;
+  var idx = 0, timer = null, playing = true;
+  var bar = document.getElementById('bar');
+  var counter = document.getElementById('counter');
+  var dotsWrap = document.getElementById('dots');
+  var playBtn = document.getElementById('play');
+
+  scenes.forEach(function(s,i){
+    var b = document.createElement('b');
+    if(i===0) b.className='on';
+    b.title = s.dataset.step;
+    b.addEventListener('click', function(){ go(i); });
+    dotsWrap.appendChild(b);
+  });
+
+  function render(){
+    scenes.forEach(function(s,i){ s.classList.toggle('active', i===idx); });
+    bar.style.width = ((idx+1)/total*100) + '%';
+    counter.textContent = (idx+1) + ' / ' + total;
+    Array.prototype.forEach.call(dotsWrap.children, function(d,i){ d.classList.toggle('on', i===idx); });
+  }
+  function go(i){ idx = (i+total)%total; render(); restart(); }
+  function next(){ go(idx+1); }
+  function prev(){ go(idx-1); }
+  function restart(){ if(playing){ clearInterval(timer); timer=setInterval(next, 7000); } }
+  function setPlay(p){ playing=p; playBtn.textContent = p?'⏸ 暂停':'▶ 播放'; if(p) restart(); else clearInterval(timer); }
+
+  document.getElementById('next').onclick = next;
+  document.getElementById('prev').onclick = prev;
+  playBtn.onclick = function(){ setPlay(!playing); };
+  document.addEventListener('keydown', function(e){
+    if(e.key==='ArrowRight') next();
+    else if(e.key==='ArrowLeft') prev();
+    else if(e.key===' '){ e.preventDefault(); setPlay(!playing); }
+  });
+  render(); restart();
+})();
+</script>
+</body>
+</html>
