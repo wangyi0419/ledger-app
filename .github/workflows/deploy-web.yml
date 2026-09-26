@@ -78,8 +78,6 @@ jobs:
   deploy-cf:
     needs: build
     runs-on: ubuntu-latest
-    # 仅在仓库配置了 Cloudflare Secrets 时才部署；未配置则自动跳过，不影响 GitHub Pages
-    if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
     steps:
       - name: 下载 Cloudflare 产物
         uses: actions/download-artifact@v4
@@ -88,6 +86,8 @@ jobs:
           path: dist
 
       - name: 部署到 Cloudflare Pages
+        # 仅当仓库配置了 Cloudflare Secrets 时才执行；未配置自动跳过，不影响 GitHub Pages
+        if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
