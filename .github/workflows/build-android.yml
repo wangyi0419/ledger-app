@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+env:
+  ANDROID_HOME: /usr/local/lib/android/sdk
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,11 +25,16 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: 准备 Android SDK 并接受许可
-        uses: android-actions/setup-android@v3
+      - name: 安装并授权 Android SDK
+        run: |
+          SDKMGR=$(ls $ANDROID_HOME/cmdline-tools/*/bin/sdkmanager 2>/dev/null | head -1)
+          echo "sdkmanager: $SDKMGR"
+          export PATH=$PATH:$(dirname $SDKMGR):$ANDROID_HOME/platform-tools
+          yes | $SDKMGR --licenses
+          $SDKMGR "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: 生成 android 平台目录（若缺失）
-        run: flutter create --platforms=android .
+        run: flutter create --platforms=android --project-name ledger_sync_app .
 
       - name: 安装依赖
         run: flutter pub get

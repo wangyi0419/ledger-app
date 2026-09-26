@@ -4,7 +4,8 @@
 用法：python3 tools/inject_pwa.py
 前置：先执行 `flutter build web`（生成 build/web/index.html）。
 
-- 把 web/manifest.json 与 web/icons/ 复制到 build/web/
+- 将自定义 PWA manifest 写入 build/web/manifest.json（内嵌，避免被 flutter create 冲掉）
+- 把 web/icons/ 复制到 build/web/
 - 向 build/web/index.html 的 <head> 注入：
   apple-mobile-web-app-capable / apple-touch-icon / theme-color / manifest 等
   幂等：已存在的标签不会重复注入。
@@ -12,10 +13,28 @@
 import os
 import shutil
 import sys
+import json
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUILD = os.path.join(ROOT, "build", "web")
 SRC_WEB = os.path.join(ROOT, "web")
+
+# 内嵌自定义 manifest（不依赖仓库里的 web/manifest.json，避免被 flutter create 覆盖）
+MANIFEST = {
+    "name": "记账同步",
+    "short_name": "记账",
+    "description": "跨平台记账应用，数据加密同步至私有 GitHub 仓库。",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#00897b",
+    "orientation": "portrait",
+    "icons": [
+        {"src": "icons/Icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+        {"src": "icons/Icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+        {"src": "icons/Icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
+    ],
+}
 
 META_TAGS = [
     '<meta name="apple-mobile-web-app-capable" content="yes">',
@@ -29,10 +48,12 @@ META_TAGS = [
 ]
 
 
-def copy_assets() -> None:
-    src_manifest = os.path.join(SRC_WEB, "manifest.json")
-    if os.path.exists(src_manifest):
-        shutil.copy(src_manifest, os.path.join(BUILD, "manifest.json"))
+def write_manifest() -> None:
+    with open(os.path.join(BUILD, "manifest.json"), "w", encoding="utf-8") as f:
+        json.dump(MANIFEST, f, ensure_ascii=False, indent=2)
+
+
+def copy_icons() -> None:
     src_icons = os.path.join(SRC_WEB, "icons")
     if os.path.isdir(src_icons):
         dst = os.path.join(BUILD, "icons")
@@ -63,6 +84,7 @@ if __name__ == "__main__":
     if not os.path.isdir(BUILD):
         print("ERROR: build/web 目录不存在。", file=sys.stderr)
         sys.exit(1)
-    copy_assets()
+    write_manifest()
+    copy_icons()
     inject()
     print("PWA 安装标签已注入 build/web/index.html")
