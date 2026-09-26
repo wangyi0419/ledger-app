@@ -1,6 +1,8 @@
 name: Deploy Web (PWA)
 
-# 将记账 App 构建为 Web 版并部署到 GitHub Pages，
+# 将记账 App 构建为 Web 版，并双路部署：
+#  1) Cloudflare Pages  —— 国内有节点，iPhone 主力路径（地址 https://ledger-app.pages.dev）
+#  2) GitHub Pages     —— 国际/备用路径（地址 https://<user>.github.io/ledger-app/）
 # iPhone 用 Safari「添加到主屏幕」即可当 App 使用（无需苹果开发者账号）。
 
 on:
@@ -35,20 +37,34 @@ jobs:
       - name: 安装依赖
         run: flutter pub get
 
-      - name: 构建 Web Release
-        # 锁定 HTML 渲染器：不加载 canvaskit wasm（gstatic.com 国内常被墙导致白屏）
-        # 项目 Pages 的基准路径为 /<仓库名>/，自定义域名可去掉 --base-href
+      # ---- Cloudflare 版（base-href /，根路径）----
+      - name: 构建 Web Release (Cloudflare 版)
+        run: flutter build web --release --web-renderer=html --base-href="/"
+      - name: 注入 PWA 标签 (Cloudflare 版)
+        run: python3 tools/inject_pwa.py --dir build/web
+      - name: 暂存 Cloudflare 产物
+        run: rm -rf build/cf && cp -r build/web build/cf
+
+      # ---- GitHub Pages 版（base-href /<仓库名>/）----
+      - name: 构建 Web Release (GitHub Pages 版)
         run: flutter build web --release --web-renderer=html --base-href="/${{ github.event.repository.name }}/"
+      - name: 注入 PWA 标签 (GitHub Pages 版)
+        run: python3 tools/inject_pwa.py --dir build/web
+      - name: 暂存 GitHub Pages 产物
+        run: rm -rf build/gp && cp -r build/web build/gp
 
-      - name: 注入 PWA 安装标签（iPhone 添加到主屏幕）
-        run: python3 tools/inject_pwa.py
-
-      - name: 上传 Pages 产物
+      - name: 上传 GitHub Pages 产物
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build/web
+          path: build/gp
 
-  deploy:
+      - name: 上传 Cloudflare 产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudflare-dist
+          path: build/cf
+
+  deploy-gp:
     needs: build
     runs-on: ubuntu-latest
     environment:
@@ -58,3 +74,24 @@ jobs:
       - name: 部署到 GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  deploy-cf:
+    needs: build
+    runs-on: ubuntu-latest
+    # 仅在仓库配置了 Cloudflare Secrets 时才部署；未配置则自动跳过，不影响 GitHub Pages
+    if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+    steps:
+      - name: 下载 Cloudflare 产物
+        uses: actions/download-artifact@v4
+        with:
+          name: cloudflare-dist
+          path: dist
+
+      - name: 部署到 Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ledger-app
+          directory: dist
+          branch: main

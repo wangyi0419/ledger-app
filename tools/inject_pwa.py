@@ -14,10 +14,16 @@ import os
 import shutil
 import sys
 import json
+import argparse
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BUILD = os.path.join(ROOT, "build", "web")
 SRC_WEB = os.path.join(ROOT, "web")
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--dir", default=os.path.join(ROOT, "build", "web"),
+                    help="Flutter web 构建产物目录（如 build/cf、build/gp）")
+args = parser.parse_args()
+BUILD = args.dir
 
 # 内嵌自定义 manifest（不依赖仓库里的 web/manifest.json，避免被 flutter create 覆盖）
 MANIFEST = {
