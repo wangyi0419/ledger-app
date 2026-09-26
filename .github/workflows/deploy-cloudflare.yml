@@ -1,0 +1,47 @@
+name: Deploy Cloudflare Pages
+
+# 国内可达的网页部署（根治 GitHub Pages 慢/打不开）。
+# 仅在仓库配置了 Cloudflare Secrets 后，于 Actions 页面手动 Run workflow 触发。
+# 前置（用户在 Cloudflare 侧完成）：
+#   1) 注册 Cloudflare（免费）；
+#   2) Dashboard 右侧拿 Account ID；
+#   3) My Profile → API Tokens → Create Token → 模板 "Cloudflare Pages:Edit"，
+#      把得到的 Token 与 Account ID 分别填进仓库 Secrets：
+#      CLOUDFLARE_API_TOKEN、CLOUDFLARE_ACCOUNT_ID
+# 触发后产物部署到 https://ledger-app.pages.dev （国内通常可直连）。
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+          cache: true
+
+      - name: 生成 web 平台目录
+        run: flutter create --platforms=web --project-name ledger_sync_app .
+
+      - name: 安装依赖
+        run: flutter pub get
+
+      - name: 构建 Web Release (Cloudflare 版, base-href /)
+        run: flutter build web --release --web-renderer=html --base-href="/"
+
+      - name: 注入 PWA 标签
+        run: python3 tools/inject_pwa.py
+
+      - name: 部署到 Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler pages deploy build/web --project-name=ledger-app --branch=main --commit-dirty=true
