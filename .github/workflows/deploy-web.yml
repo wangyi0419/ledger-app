@@ -36,8 +36,9 @@ jobs:
         run: flutter pub get
 
       - name: 构建 Web Release
+        # 锁定 HTML 渲染器：不加载 canvaskit wasm（gstatic.com 国内常被墙导致白屏）
         # 项目 Pages 的基准路径为 /<仓库名>/，自定义域名可去掉 --base-href
-        run: flutter build web --release --base-href="/${{ github.event.repository.name }}/"
+        run: flutter build web --release --web-renderer=html --base-href="/${{ github.event.repository.name }}/"
 
       - name: 注入 PWA 安装标签（iPhone 添加到主屏幕）
         run: python3 tools/inject_pwa.py

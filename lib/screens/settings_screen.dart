@@ -15,6 +15,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _repoCtl = TextEditingController();
   final _tokenCtl = TextEditingController();
   final _pathCtl = TextEditingController(text: 'data/ledger.enc');
+  final _apiCtl = TextEditingController(text: 'https://api.github.com');
   bool _loading = false;
   String _msg = '';
 
@@ -30,12 +31,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _repoCtl.text = cfg['repo'] ?? '';
     _tokenCtl.text = cfg['token'] ?? '';
     _pathCtl.text = cfg['path'] ?? 'data/ledger.enc';
+    _apiCtl.text = cfg['apiBase'] ?? 'https://api.github.com';
   }
 
   Future<void> _test() async {
     setState(() => _msg = '测试中…');
     try {
-      final login = await GitHubService.testConnection(_tokenCtl.text.trim());
+      final login = await GitHubService.testConnection(
+          _tokenCtl.text.trim(), _apiCtl.text.trim());
       setState(() => _msg = '连接成功，账号：$login');
     } catch (e) {
       setState(() => _msg = '连接失败：$e');
@@ -53,6 +56,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       repo: _repoCtl.text.trim(),
       token: _tokenCtl.text.trim(),
       path: _pathCtl.text.trim(),
+      apiBase: _apiCtl.text.trim(),
     );
     await Provider.of<LedgerStore>(context, listen: false).sync();
     setState(() => _loading = false);
@@ -91,6 +95,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         TextField(
           controller: _pathCtl,
           decoration: const InputDecoration(labelText: '仓库内文件路径', border: OutlineInputBorder()),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _apiCtl,
+          decoration: const InputDecoration(
+              labelText: 'API 基地址',
+              border: OutlineInputBorder(),
+              hintText: '默认官方；国内不可达时填中转地址'),
         ),
         const SizedBox(height: 16),
         Wrap(
