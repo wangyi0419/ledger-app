@@ -7,6 +7,12 @@ import '../models/txn.dart';
 import 'crypto_service.dart';
 import 'github_service.dart';
 
+/// 默认分类（模块级函数，供 _Bundle 与 LedgerStore 共用）
+Map<String, List<String>> _defaultCategories() => {
+      'expense': List<String>.from(Categories.expense),
+      'income': List<String>.from(Categories.income),
+    };
+
 /// 加密文件包装体：记录 + 删除墓碑 + 自定义分类
 class _Bundle {
   final List<Txn> txns;
@@ -89,11 +95,6 @@ class LedgerStore extends ChangeNotifier {
 
   static const _localKey = 'ledger_local_enc';
   static const _storage = FlutterSecureStorage();
-
-  static Map<String, List<String>> _defaultCategories() => {
-        'expense': List<String>.from(Categories.expense),
-        'income': List<String>.from(Categories.income),
-      };
 
   /// 本地是否已存在加密缓存（用于判断首次运行）
   static Future<bool> hasLocalCache() async {
