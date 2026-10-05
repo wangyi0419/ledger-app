@@ -57,7 +57,41 @@ class _ListScreenState extends State<ListScreen> {
               : ListView.separated(
                   itemCount: monthTxns.length,
                   separatorBuilder: (_, __) => const Divider(height: 1),
-                  itemBuilder: (_, i) => _TxnTile(t: monthTxns[i]),
+                  itemBuilder: (_, i) {
+                    final t = monthTxns[i];
+                    return Dismissible(
+                      key: ValueKey(t.id),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        child: const Icon(Icons.delete, color: Colors.white),
+                      ),
+                      confirmDismiss: (dir) async {
+                        final ok = await showDialog<bool>(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: const Text('删除该记录？'),
+                            content: Text('${t.category} ¥${t.amount.toStringAsFixed(2)}'),
+                            actions: [
+                              TextButton(
+                                  onPressed: () => Navigator.pop(context, false),
+                                  child: const Text('取消')),
+                              FilledButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text('删除')),
+                            ],
+                          ),
+                        );
+                        if (ok == true) {
+                          Provider.of<LedgerStore>(context, listen: false).deleteTxn(t.id);
+                        }
+                        return ok ?? false;
+                      },
+                      child: _TxnTile(t: t),
+                    );
+                  },
                 ),
         ),
       ],
@@ -101,27 +135,6 @@ class _TxnTile extends StatelessWidget {
       trailing: Text(
         '${isIncome ? '+' : '-'}¥${t.amount.toStringAsFixed(2)}',
         style: TextStyle(color: color, fontWeight: FontWeight.bold),
-      ),
-      onLongPress: () => _confirmDelete(context, t),
-    );
-  }
-
-  void _confirmDelete(BuildContext context, Txn t) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('删除该记录？'),
-        content: Text('${t.category} ¥${t.amount.toStringAsFixed(2)}'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          FilledButton(
-            onPressed: () {
-              Provider.of<LedgerStore>(context, listen: false).deleteTxn(t.id);
-              Navigator.pop(context);
-            },
-            child: const Text('删除'),
-          ),
-        ],
       ),
     );
   }

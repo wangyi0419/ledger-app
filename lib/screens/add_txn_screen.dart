@@ -15,11 +15,18 @@ class _AddTxnScreenState extends State<AddTxnScreen> {
   String _type = 'expense';
   final _amountCtl = TextEditingController();
   final _noteCtl = TextEditingController();
-  String _category = Categories.expense.first;
+  late LedgerStore _store;
+  late String _category;
   DateTime _date = DateTime.now();
 
-  List<String> get _cats =>
-      _type == 'income' ? Categories.income : Categories.expense;
+  List<String> get _cats => _store.categories(_type);
+
+  @override
+  void initState() {
+    super.initState();
+    _store = Provider.of<LedgerStore>(context, listen: false);
+    _category = _cats.first;
+  }
 
   void _onTypeChanged(String? v) {
     if (v == null) return;

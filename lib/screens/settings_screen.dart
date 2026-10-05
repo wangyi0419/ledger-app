@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/github_service.dart';
 import '../services/ledger_store.dart';
+import 'category_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -115,6 +116,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 12),
         if (_msg.isNotEmpty)
           Text(_msg, style: TextStyle(color: _msg.contains('失败') ? Colors.red : Colors.green)),
+        const SizedBox(height: 24),
+        ListTile(
+          leading: const Icon(Icons.category),
+          title: const Text('分类管理'),
+          subtitle: const Text('自定义收支分类（增 / 删 / 改）'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context)
+              .push(MaterialPageRoute(builder: (_) => const CategoryScreen())),
+        ),
         const Divider(height: 32),
         const Text('安全说明', style: TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
