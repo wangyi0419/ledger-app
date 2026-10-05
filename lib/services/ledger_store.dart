@@ -81,8 +81,11 @@ class LedgerStore extends ChangeNotifier {
   List<Txn> get txns => List.unmodifiable(_txns);
   bool get unlocked => _unlocked;
   String get lastSyncMsg => _lastSyncMsg;
-  List<String> categories(String type) =>
-      List.unmodifiable(_categories[type] ?? const []);
+  List<String> categories(String type) {
+    final list = _categories[type];
+    if (list == null) return const <String>[];
+    return List.unmodifiable(list);
+  }
 
   static const _localKey = 'ledger_local_enc';
   static const _storage = FlutterSecureStorage();
