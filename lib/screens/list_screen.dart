@@ -136,6 +136,9 @@ class _TxnTile extends StatelessWidget {
         '${isIncome ? '+' : '-'}¥${t.amount.toStringAsFixed(2)}',
         style: TextStyle(color: color, fontWeight: FontWeight.bold),
       ),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => AddTxnScreen(initial: t)),
+      ),
     );
   }
 }

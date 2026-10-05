@@ -5,7 +5,8 @@ import '../models/txn.dart';
 import '../services/ledger_store.dart';
 
 class AddTxnScreen extends StatefulWidget {
-  const AddTxnScreen({super.key});
+  final Txn? initial; // 非空表示编辑已有记录
+  const AddTxnScreen({super.key, this.initial});
 
   @override
   State<AddTxnScreen> createState() => _AddTxnScreenState();
@@ -25,7 +26,16 @@ class _AddTxnScreenState extends State<AddTxnScreen> {
   void initState() {
     super.initState();
     _store = Provider.of<LedgerStore>(context, listen: false);
-    _category = _cats.first;
+    final init = widget.initial;
+    if (init != null) {
+      _type = init.type;
+      _amountCtl.text = init.amount.toStringAsFixed(2);
+      _noteCtl.text = init.note;
+      _category = init.category;
+      _date = DateTime.fromMillisecondsSinceEpoch(init.dateMillis);
+    } else {
+      _category = _cats.first;
+    }
   }
 
   void _onTypeChanged(String? v) {
@@ -52,20 +62,27 @@ class _AddTxnScreenState extends State<AddTxnScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('请输入有效金额')));
       return;
     }
-    Provider.of<LedgerStore>(context, listen: false).addTxn(Txn(
+    final store = Provider.of<LedgerStore>(context, listen: false);
+    final txn = Txn(
+      id: widget.initial?.id, // 编辑时保留原 id
       type: _type,
       amount: amount,
       category: _category,
       note: _noteCtl.text.trim(),
       dateMillis: _date.millisecondsSinceEpoch,
-    ));
+    );
+    if (widget.initial != null) {
+      store.updateTxn(txn);
+    } else {
+      store.addTxn(txn);
+    }
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('新增记录')),
+      appBar: AppBar(title: Text(widget.initial != null ? '编辑记录' : '新增记录')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -92,7 +109,11 @@ class _AddTxnScreenState extends State<AddTxnScreen> {
             DropdownButtonFormField<String>(
               value: _category,
               decoration: const InputDecoration(labelText: '分类', border: OutlineInputBorder()),
-              items: _cats.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+              items: (_cats.contains(_category)
+                      ? _cats
+                      : <String>[_category, ..._cats])
+                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  .toList(),
               onChanged: (v) => setState(() => _category = v!),
             ),
             const SizedBox(height: 16),
